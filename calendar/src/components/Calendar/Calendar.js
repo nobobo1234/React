@@ -5,7 +5,6 @@ import moment from "moment";
 import Aux from "../../hoc/ReactAux";
 import "moment/locale/nl";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import CsvParse from "../../containers/CSVParser";
 
 BigCalendar.setLocalizer(BigCalendar.momentLocalizer(moment));
 
@@ -34,11 +33,6 @@ const calendar = props => {
                 popup={true}
             />
             <button>Export current day to clipboard</button>
-            <CsvParse
-                fileHeaders={props.fileheaders}
-                onDataUploaded={props.upload}
-                render={onChange => <input type="file" onChange={onChange} />}
-            />
         </Aux>
     );
 };

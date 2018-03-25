@@ -9,22 +9,6 @@ class App extends Component {
         events: {}
     };
 
-    handleDate = data => {
-        for (let item of data) {
-            for (const [key, value] of Object.entries(item)) {
-                if (value) {
-                    let regex = /^(.+) (\d{2}:\d{2}) ?- ?(\d{2}:\d{2})$/g;
-                    let testedregex = regex.exec(value);
-                    let startdate = moment(
-                        `${key} ${testedregex[2]}:00`,
-                        "dddd HH:mm:ss"
-                    );
-                    console.log(startdate.toString());
-                }
-            }
-        }
-    };
-
     render() {
         let fileheaders = [
             "Monday",
