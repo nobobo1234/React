@@ -32,7 +32,6 @@ const calendar = props => {
                 culture="nl-NL"
                 popup={true}
             />
-            <button>Export current day to clipboard</button>
         </Aux>
     );
 };

@@ -1,27 +1,17 @@
 import React, { Component } from "react";
 
-import Calendar from "./components/Calendar/Calendar";
 import Aux from "./hoc/ReactAux";
-import moment from "moment";
+import { Route } from "react-router-dom";
+import Calendar from "./components/Calendar/Calendar";
+import NavBar from "./components/NavBar/NavBar";
 
 class App extends Component {
-    state = {
-        events: {}
-    };
-
     render() {
-        let fileheaders = [
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday"
-        ];
         return (
-            <Aux>
-                <Calendar fileheaders={fileheaders} upload={this.handleDate} />
-            </Aux>
+            <div>
+                <NavBar />
+                <Route path="/" component={Calendar} />
+            </div>
         );
     }
 }
