@@ -10,7 +10,8 @@ class App extends Component {
         return (
             <div>
                 <NavBar />
-                <Route path="/" component={Calendar} />
+                <Route path="/" exact component={Calendar} />
+                <Route path="/add" render={() => <h1>It works!</h1>} />
             </div>
         );
     }

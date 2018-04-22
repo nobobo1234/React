@@ -4,8 +4,10 @@
   "private": true,
   "dependencies": {
     "@material-ui/icons": "^1.0.0-beta.42",
+    "axios": "^0.18.0",
     "csvtojson": "^1.1.9",
     "material-ui": "^1.0.0-beta.41",
+    "material-ui-time-picker": "^0.1.7",
     "moment": "^2.20.1",
     "moment-timezone": "^0.5.14",
     "react": "^16.2.0",

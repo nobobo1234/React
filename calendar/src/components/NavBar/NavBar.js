@@ -4,7 +4,8 @@ import AppBar from "material-ui/AppBar";
 import Toolbar from "material-ui/Toolbar";
 import Typography from "material-ui/Typography";
 import IconButton from "material-ui/IconButton";
-import { Add } from "@material-ui/icons";
+import { Add, Home } from "@material-ui/icons";
+import { Link } from "react-router-dom";
 
 const styles = {
     root: {
@@ -13,10 +14,6 @@ const styles = {
     flex: {
         flex: 1
     }
-};
-
-const onClickHandler = () => {
-    console.log("test");
 };
 
 const navBar = props => {
@@ -31,7 +28,10 @@ const navBar = props => {
                         className={classes.flex}>
                         Noah's planner
                     </Typography>
-                    <IconButton color="inherit" onClick={onClickHandler}>
+                    <IconButton component={Link} to="/" color="inherit">
+                        <Home />
+                    </IconButton>
+                    <IconButton component={Link} to="/add" color="inherit">
                         <Add />
                     </IconButton>
                 </Toolbar>
