@@ -1,17 +1,19 @@
 import React, { Component } from "react";
 
-import Aux from "./hoc/ReactAux";
-import { Route } from "react-router-dom";
-import Calendar from "./components/Calendar/Calendar";
+import { Route, Switch } from "react-router-dom";
+import Calendar from "./containers/Calendar/Calendar";
 import NavBar from "./components/NavBar/NavBar";
+import Add from "./containers/Add/Add";
 
 class App extends Component {
     render() {
         return (
             <div>
                 <NavBar />
-                <Route path="/" exact component={Calendar} />
-                <Route path="/add" render={() => <h1>It works!</h1>} />
+                <Switch>
+                    <Route path="/" exact component={Calendar} />
+                    <Route path="/add" component={Add} />
+                </Switch>
             </div>
         );
     }
