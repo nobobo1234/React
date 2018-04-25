@@ -52,10 +52,17 @@ class Calendar extends Component {
     };
 
     closeModalHandler = () => {
-        this.setState({ open: false });
+        this.setState({ open: false, selectedEvent: {} });
     };
 
-    deleteEventHandler = async id => {};
+    deleteEventHandler = async () => {
+        const id = this.state.selectedEvent.id;
+        const events = [...this.state.events];
+        await axios.delete(`/events/${id}.json`);
+        this.closeModalHandler();
+        events.splice(events.findIndex(el => el.id === id), 1);
+        this.setState({ events });
+    };
 
     render() {
         const { classes } = this.props;
@@ -87,7 +94,7 @@ class Calendar extends Component {
                         </Typography>
                         <Button
                             color="secondary"
-                            onClick={this.closeModalHandler}>
+                            onClick={this.deleteEventHandler}>
                             Delete Event
                         </Button>
                     </div>

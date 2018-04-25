@@ -1,4 +1,6 @@
 {
     "jsxBracketSameLine": true,
-    "tabWidth": 4
+    "tabWidth": 4,
+    "eslintIntegration": true,
+    "printWidth": 100
 }
