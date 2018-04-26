@@ -6,7 +6,8 @@ import { TimePicker, DatePicker } from "material-ui-pickers";
 
 const styles = {
     input: {
-        width: "200px"
+        width: "300px",
+        margin: "5px"
     }
 };
 
@@ -79,6 +80,7 @@ const input = props => {
         case "datepicker":
             inputElement = (
                 <DatePicker
+                    className={classes.input}
                     label={props.label}
                     showTodayButton
                     value={props.value}

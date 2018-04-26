@@ -3,6 +3,7 @@ import { withStyles } from "material-ui/styles";
 import { Send } from "@material-ui/icons";
 import Button from "material-ui/Button";
 import axios from "../../axios";
+import moment from "moment";
 
 import Input from "../../components/UI/Input/Input";
 import formElementHelper from "../../helpers/formElementHelper";
@@ -11,7 +12,8 @@ import Spinner from "../../components/UI/Spinner/Spinner";
 const styles = {
     form: {
         boxShadow: "0 2px 3px #ccc",
-        padding: "10px"
+        padding: "10px",
+        textAlign: "center"
     },
     submit: {
         fontSize: "20px"
@@ -50,7 +52,8 @@ class Add extends Component {
             date: formElementHelper(
                 "datepicker",
                 {
-                    label: "Day"
+                    label: "Day",
+                    width: "300"
                 },
                 null,
                 Date.now()
@@ -78,40 +81,58 @@ class Add extends Component {
     orderHandler = async event => {
         event.preventDefault();
         this.setState({ loading: true });
+
+        let begin = moment(this.state.addForm.beginTime.value)
+            .date(moment(this.state.addForm.date.value).date())
+            .month(moment(this.state.addForm.date.value).month())
+            .toDate();
+        let end = moment(this.state.addForm.endTime.value)
+            .date(moment(this.state.addForm.date.value).date())
+            .month(moment(this.state.addForm.date.value).month())
+            .toDate();
+
+        console.log(begin, end);
+
         const info = {
             subject: this.state.addForm.subject.value,
             makeorlearn: this.state.addForm.subject.makeorlearn,
             date: this.state.addForm.date.value,
             times: {
-                begin: this.state.addForm.beginTime.value,
-                end: this.state.addForm.endTime.value
+                begin,
+                end
             }
         };
+
         await axios.post("/events.json", info).catch(e => console.log(e));
         this.setState({ loading: false });
     };
 
     checkValidity(value, rules, inputIdentifier) {
         let isValid = true;
+        if (!rules) {
+            return true;
+        }
 
-        if (!rules) return true;
-
-        if (
-            rules.required &&
-            (inputIdentifier !== "beginTime" &&
-                inputIdentifier !== "endTime" &&
-                inputIdentifier !== "date")
-        ) {
+        if (rules.required) {
             isValid = value.trim() !== "" && isValid;
-        } else if (rules.required) {
-            isValid = value !== "" && isValid;
         }
 
         if (rules.minLength) {
             isValid = value.length >= rules.minLength && isValid;
         }
+
         if (rules.maxLength) {
             isValid = value.length <= rules.maxLength && isValid;
+        }
+
+        if (rules.isEmail) {
+            const pattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+            isValid = pattern.test(value) && isValid;
+        }
+
+        if (rules.isNumeric) {
+            const pattern = /^\d+$/;
+            isValid = pattern.test(value) && isValid;
         }
 
         return isValid;
@@ -168,9 +189,7 @@ class Add extends Component {
                         invalid={!formElement.config.valid}
                         shouldValidate={formElement.config.validation}
                         touched={formElement.config.touched}
-                        changed={event =>
-                            this.inputChangedHandler(event, formElement.id)
-                        }
+                        changed={event => this.inputChangedHandler(event, formElement.id)}
                     />
                 ))}
                 <br />

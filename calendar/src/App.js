@@ -4,6 +4,7 @@ import { Route, Switch } from "react-router-dom";
 import Calendar from "./containers/Calendar/Calendar";
 import NavBar from "./components/NavBar/NavBar";
 import Add from "./containers/Add/Add";
+import Auth from "./containers/Auth/Auth";
 
 class App extends Component {
     render() {
@@ -13,6 +14,7 @@ class App extends Component {
                 <Switch>
                     <Route path="/" exact component={Calendar} />
                     <Route path="/add" component={Add} />
+                    <Route path="/auth" component={Auth} />
                 </Switch>
             </div>
         );
