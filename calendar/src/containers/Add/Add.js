@@ -107,7 +107,7 @@ class Add extends Component {
         this.setState({ loading: false });
     };
 
-    checkValidity(value, rules, inputIdentifier) {
+    checkValidity(value, rules) {
         let isValid = true;
         if (!rules) {
             return true;
