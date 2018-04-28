@@ -35,7 +35,7 @@ class Calendar extends Component {
 
     async componentDidMount() {
         const events = [];
-        const response = await axios.get("/events.json");
+        const response = await axios.get("/events.json?auth=" + this.props.router.auth.token);
         for (let key in response.data) {
             events.push({
                 id: key,
@@ -79,22 +79,12 @@ class Calendar extends Component {
                 />
                 <Modal open={this.state.open} onClose={this.closeModalHandler}>
                     <div className={classes.paper}>
-                        <Typography variant="title">
-                            {this.state.selectedEvent.title}
-                        </Typography>
+                        <Typography variant="title">{this.state.selectedEvent.title}</Typography>
                         <Typography variant="subheading">
-                            Frans van{" "}
-                            {moment(this.state.selectedEvent.start).format(
-                                "HH:mm"
-                            )}{" "}
-                            tot{" "}
-                            {moment(this.state.selectedEvent.end).format(
-                                "HH:mm"
-                            )}
+                            Frans van {moment(this.state.selectedEvent.start).format("HH:mm")} tot{" "}
+                            {moment(this.state.selectedEvent.end).format("HH:mm")}
                         </Typography>
-                        <Button
-                            color="secondary"
-                            onClick={this.deleteEventHandler}>
+                        <Button color="secondary" onClick={this.deleteEventHandler}>
                             Delete Event
                         </Button>
                     </div>

@@ -1,10 +1,12 @@
 import React, { Component } from "react";
 import { withStyles } from "material-ui/styles";
+import axios from "axios";
 
 import Input from "../../components/UI/Input/Input";
 import formElementHelper from "../../helpers/formElementHelper";
 import { Send } from "@material-ui/icons";
 import Button from "material-ui/Button";
+import Snackbar from "material-ui/Snackbar";
 
 const styles = {
     form: {
@@ -39,7 +41,11 @@ class Auth extends Component {
                     minLength: 6
                 }
             )
-        }
+        },
+        formIsValid: false,
+        isSignUp: false,
+        errorMessage: "",
+        openSnackBar: false
     };
 
     checkValidity(value, rules, inputIdentifier) {
@@ -90,6 +96,43 @@ class Auth extends Component {
         this.setState({ controls: updatedControls });
     };
 
+    submitFormHandler = async event => {
+        event.preventDefault();
+        const email = this.state.controls.email.value;
+        const password = this.state.controls.password.value;
+        const authData = {
+            email,
+            password,
+            returnSecureToken: true
+        };
+        let url =
+            "https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyD35mSKACuABFE3847ZKPAatDcFgsQ9O4I";
+        if (!this.state.isSignUp)
+            url =
+                "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyD35mSKACuABFE3847ZKPAatDcFgsQ9O4I";
+        const response = await axios.post(url, authData).catch(e => {
+            let error = e.response.data.error.message;
+            if (error === "INVALID_PASSWORD") error = "Invalid password";
+            else if (error === "EMAIL_EXISTS") error = "This email already exists";
+            else if (error === "EMAIL_NOT_FOUND") error = "This email is not found";
+            this.setState({ errorMessage: error, openSnackBar: true });
+        });
+        this.props.router.authaction(response.data.localId, response.data.idToken);
+        setTimeout(() => {
+            this.props.router.auth("", "");
+        }, response.data.expiresIn * 1000);
+    };
+
+    switchAuthModeHandler = () => {
+        this.setState(prevState => {
+            return { isSignUp: !prevState.isSignUp };
+        });
+    };
+
+    snackbarClosedHandler = () => {
+        this.setState({ openSnackBar: false });
+    };
+
     render() {
         const { classes } = this.props;
         const formElementsArray = [];
@@ -115,7 +158,7 @@ class Auth extends Component {
 
         return (
             <div>
-                <form className={classes.form}>
+                <form className={classes.form} onSubmit={this.submitFormHandler}>
                     {form}
                     <br />
                     <Button
@@ -127,6 +170,25 @@ class Auth extends Component {
                         Submit &nbsp;
                         <Send />
                     </Button>
+                    <br />
+                    <Button
+                        variant="raised"
+                        color="secondary"
+                        onClick={this.switchAuthModeHandler}
+                        /* disabled={!this.state.formIsValid}> */
+                    >
+                        Switch to {this.state.isSignUp ? "SIGNIN" : "SIGNUP"}
+                    </Button>
+                    <Snackbar
+                        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                        open={this.state.openSnackBar}
+                        autoHideDuration={4000}
+                        onClose={this.snackbarClosedHandler}
+                        message={<div>{this.state.errorMessage}</div>}
+                        SnackbarContentProps={{
+                            "aria-describedby": "message-id"
+                        }}
+                    />
                 </form>
             </div>
         );

@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import axios from "../../../axios-orders";
+import { connect } from "react-redux";
 
 import Button from "../../../components/UI/Button/Button";
 import classes from "./ContactData.css";
@@ -75,26 +76,23 @@ class ContactData extends Component {
         this.setState({ loading: true });
         const formData = {};
         for (let formElementIdentifier in this.state.orderForm) {
-            formData[formElementIdentifier] = this.state.orderForm[
-                formElementIdentifier
-            ].value;
+            formData[formElementIdentifier] = this.state.orderForm[formElementIdentifier].value;
         }
         const order = {
-            ingredients: this.props.ingredients,
+            ingredients: this.props.ings,
             price: this.props.price,
             orderData: formData
         };
-        await axios
-            .post("/orders.json", order)
-            .catch(err => this.setState({ loading: false }));
+        await axios.post("/orders.json", order).catch(err => this.setState({ loading: false }));
         this.setState({ loading: false });
         this.props.history.push("/");
     };
 
     checkValidity(value, rules) {
         let isValid = true;
-
-        if (!rules) return true;
+        if (!rules) {
+            return true;
+        }
 
         if (rules.required) {
             isValid = value.trim() !== "" && isValid;
@@ -103,8 +101,19 @@ class ContactData extends Component {
         if (rules.minLength) {
             isValid = value.length >= rules.minLength && isValid;
         }
+
         if (rules.maxLength) {
             isValid = value.length <= rules.maxLength && isValid;
+        }
+
+        if (rules.isEmail) {
+            const pattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+            isValid = pattern.test(value) && isValid;
+        }
+
+        if (rules.isNumeric) {
+            const pattern = /^\d+$/;
+            isValid = pattern.test(value) && isValid;
         }
 
         return isValid;
@@ -127,8 +136,7 @@ class ContactData extends Component {
 
         let formIsValid = true;
         for (let inputIdentifier in updatedOrderForm) {
-            formIsValid =
-                updatedOrderForm[inputIdentifier].valid && formIsValid;
+            formIsValid = updatedOrderForm[inputIdentifier].valid && formIsValid;
         }
 
         this.setState({ orderForm: updatedOrderForm, formIsValid });
@@ -153,9 +161,7 @@ class ContactData extends Component {
                         invalid={!formElement.config.valid}
                         shouldValidate={formElement.config.validation}
                         touched={formElement.config.touched}
-                        changed={event =>
-                            this.inputChangedHandler(event, formElement.id)
-                        }
+                        changed={event => this.inputChangedHandler(event, formElement.id)}
                     />
                 ))}
                 <Button btnType="Success" disabled={!this.state.formIsValid}>
@@ -175,4 +181,11 @@ class ContactData extends Component {
     }
 }
 
-export default ContactData;
+const mapStateToProps = state => {
+    return {
+        ings: state.ingredients,
+        price: state.totalPrice
+    };
+};
+
+export default connect(mapStateToProps)(ContactData);
