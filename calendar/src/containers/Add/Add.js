@@ -2,12 +2,14 @@ import React, { Component } from "react";
 import { withStyles } from "material-ui/styles";
 import { Send } from "@material-ui/icons";
 import Button from "material-ui/Button";
-import axios from "../../axios";
 import moment from "moment";
+import { connect } from "react-redux";
 
 import Input from "../../components/UI/Input/Input";
 import formElementHelper from "../../helpers/formElementHelper";
 import Spinner from "../../components/UI/Spinner/Spinner";
+import * as actions from "../../store/actions/";
+import checkValidity from "../../helpers/checkValidity";
 
 const styles = {
     form: {
@@ -80,7 +82,6 @@ class Add extends Component {
 
     orderHandler = async event => {
         event.preventDefault();
-        this.setState({ loading: true });
 
         let begin = moment(this.state.addForm.beginTime.value)
             .date(moment(this.state.addForm.date.value).date())
@@ -90,8 +91,6 @@ class Add extends Component {
             .date(moment(this.state.addForm.date.value).date())
             .month(moment(this.state.addForm.date.value).month())
             .toDate();
-
-        console.log(begin, end);
 
         const info = {
             subject: this.state.addForm.subject.value,
@@ -103,40 +102,8 @@ class Add extends Component {
             }
         };
 
-        await axios.post("/events.json", info).catch(e => console.log(e));
-        this.setState({ loading: false });
+        this.props.onSubmitAddForm(info, this.props.token);
     };
-
-    checkValidity(value, rules) {
-        let isValid = true;
-        if (!rules) {
-            return true;
-        }
-
-        if (rules.required) {
-            isValid = value.trim() !== "" && isValid;
-        }
-
-        if (rules.minLength) {
-            isValid = value.length >= rules.minLength && isValid;
-        }
-
-        if (rules.maxLength) {
-            isValid = value.length <= rules.maxLength && isValid;
-        }
-
-        if (rules.isEmail) {
-            const pattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-            isValid = pattern.test(value) && isValid;
-        }
-
-        if (rules.isNumeric) {
-            const pattern = /^\d+$/;
-            isValid = pattern.test(value) && isValid;
-        }
-
-        return isValid;
-    }
 
     inputChangedHandler = (event, inputIdentifier) => {
         const updatedAddForm = {
@@ -153,7 +120,7 @@ class Add extends Component {
         )
             updatedFormElement.value = event.target.value;
         else updatedFormElement.value = event;
-        updatedFormElement.valid = this.checkValidity(
+        updatedFormElement.valid = checkValidity(
             updatedFormElement.value,
             updatedFormElement.validation,
             inputIdentifier
@@ -203,7 +170,7 @@ class Add extends Component {
                 </Button>
             </form>
         );
-        if (this.state.loading) {
+        if (this.props.loading) {
             form = <Spinner />;
         }
         return (
@@ -215,4 +182,17 @@ class Add extends Component {
     }
 }
 
-export default withStyles(styles)(Add);
+const mapStateToProps = state => {
+    return {
+        loading: state.add.loading,
+        token: state.auth.token
+    };
+};
+
+const mapDispatchToProps = dispatch => {
+    return {
+        onSubmitAddForm: (formData, token) => dispatch(actions.submitAddForm(formData, token))
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Add));

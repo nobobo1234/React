@@ -1,9 +1,9 @@
-const formElementHelper = (elementType, elementConfig, validation, value) => {
+const formElementHelper = (elementType, elementConfig, validation, value = "") => {
     if (!validation) {
         return {
             elementType,
             elementConfig,
-            value: "",
+            value: value,
             valid: true,
             validation: {}
         };
@@ -18,7 +18,7 @@ const formElementHelper = (elementType, elementConfig, validation, value) => {
     return {
         elementType,
         elementConfig,
-        value: "",
+        value: value,
         validation,
         valid: false,
         touched: false

@@ -1,12 +1,15 @@
 import React, { Component } from "react";
-import { withStyles } from "material-ui/styles";
-import axios from "axios";
+import { connect } from "react-redux";
 
-import Input from "../../components/UI/Input/Input";
 import formElementHelper from "../../helpers/formElementHelper";
-import { Send } from "@material-ui/icons";
+import checkValidity from "../../helpers/checkValidity";
+import Input from "../../components/UI/Input/Input";
 import Button from "material-ui/Button";
-import Snackbar from "material-ui/Snackbar";
+import { Send } from "@material-ui/icons";
+import { withStyles } from "material-ui/styles";
+import * as actions from "../../store/actions/";
+import Spinner from "../../components/UI/Spinner/Spinner";
+import { Redirect } from "react-router-dom";
 
 const styles = {
     form: {
@@ -42,95 +45,37 @@ class Auth extends Component {
                 }
             )
         },
-        formIsValid: false,
-        isSignUp: false,
-        errorMessage: "",
-        openSnackBar: false
+        formIsValid: false
     };
 
-    checkValidity(value, rules, inputIdentifier) {
-        let isValid = true;
-        if (!rules) {
-            return true;
-        }
-
-        if (rules.required) {
-            isValid = value.trim() !== "" && isValid;
-        }
-
-        if (rules.minLength) {
-            isValid = value.length >= rules.minLength && isValid;
-        }
-
-        if (rules.maxLength) {
-            isValid = value.length <= rules.maxLength && isValid;
-        }
-
-        if (rules.isEmail) {
-            const pattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-            isValid = pattern.test(value) && isValid;
-        }
-
-        if (rules.isNumeric) {
-            const pattern = /^\d+$/;
-            isValid = pattern.test(value) && isValid;
-        }
-
-        return isValid;
-    }
-
     inputChangedHandler = (event, controlName) => {
-        event.preventDefault();
         const updatedControls = {
             ...this.state.controls,
             [controlName]: {
                 ...this.state.controls[controlName],
                 value: event.target.value,
-                valid: this.checkValidity(
+                valid: checkValidity(
                     event.target.value,
                     this.state.controls[controlName].validation
                 ),
                 touched: true
             }
         };
-        this.setState({ controls: updatedControls });
+
+        let formIsValid = true;
+        for (let controlName in updatedControls) {
+            formIsValid = updatedControls[controlName].valid && formIsValid;
+        }
+
+        this.setState({
+            controls: updatedControls,
+            formIsValid
+        });
     };
 
-    submitFormHandler = async event => {
+    submitHandler = event => {
         event.preventDefault();
-        const email = this.state.controls.email.value;
-        const password = this.state.controls.password.value;
-        const authData = {
-            email,
-            password,
-            returnSecureToken: true
-        };
-        let url =
-            "https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyD35mSKACuABFE3847ZKPAatDcFgsQ9O4I";
-        if (!this.state.isSignUp)
-            url =
-                "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyD35mSKACuABFE3847ZKPAatDcFgsQ9O4I";
-        const response = await axios.post(url, authData).catch(e => {
-            let error = e.response.data.error.message;
-            if (error === "INVALID_PASSWORD") error = "Invalid password";
-            else if (error === "EMAIL_EXISTS") error = "This email already exists";
-            else if (error === "EMAIL_NOT_FOUND") error = "This email is not found";
-            this.setState({ errorMessage: error, openSnackBar: true });
-        });
-        this.props.router.authaction(response.data.localId, response.data.idToken);
-        setTimeout(() => {
-            this.props.router.auth("", "");
-        }, response.data.expiresIn * 1000);
-    };
-
-    switchAuthModeHandler = () => {
-        this.setState(prevState => {
-            return { isSignUp: !prevState.isSignUp };
-        });
-    };
-
-    snackbarClosedHandler = () => {
-        this.setState({ openSnackBar: false });
+        this.props.onAuth(this.state.controls.email.value, this.state.controls.password.value);
     };
 
     render() {
@@ -143,7 +88,7 @@ class Auth extends Component {
             });
         }
 
-        const form = formElementsArray.map(formElement => (
+        let form = formElementsArray.map(formElement => (
             <Input
                 key={formElement.id}
                 type={formElement.config.type}
@@ -156,43 +101,55 @@ class Auth extends Component {
             />
         ));
 
+        if (this.props.loading) {
+            form = <Spinner />;
+        }
+
+        let errorMessage = null;
+        if (this.props.error) {
+            errorMessage = <p>{this.props.error}</p>;
+        }
+
+        let authRedirect = null;
+        if (this.props.isAuthenticated) {
+            authRedirect = <Redirect to="/" />;
+        }
+
         return (
             <div>
-                <form className={classes.form} onSubmit={this.submitFormHandler}>
+                {authRedirect}
+                <form className={classes.form} onSubmit={this.submitHandler}>
+                    <br />
+                    {errorMessage}
                     {form}
                     <br />
                     <Button
                         variant="raised"
                         color="primary"
                         type="submit"
-                        /* disabled={!this.state.formIsValid}> */
-                    >
-                        Submit &nbsp;
+                        disabled={!this.state.formIsValid}>
+                        Submit
                         <Send />
                     </Button>
-                    <br />
-                    <Button
-                        variant="raised"
-                        color="secondary"
-                        onClick={this.switchAuthModeHandler}
-                        /* disabled={!this.state.formIsValid}> */
-                    >
-                        Switch to {this.state.isSignUp ? "SIGNIN" : "SIGNUP"}
-                    </Button>
-                    <Snackbar
-                        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-                        open={this.state.openSnackBar}
-                        autoHideDuration={4000}
-                        onClose={this.snackbarClosedHandler}
-                        message={<div>{this.state.errorMessage}</div>}
-                        SnackbarContentProps={{
-                            "aria-describedby": "message-id"
-                        }}
-                    />
                 </form>
             </div>
         );
     }
 }
 
-export default withStyles(styles)(Auth);
+const mapStateToProps = state => {
+    return {
+        loading: state.auth.loading,
+        error: state.auth.error,
+        isAuthenticated: state.auth.token !== null
+    };
+};
+
+const mapDispatchToProps = dispatch => {
+    return {
+        onAuth: (email, password, isSignUp) =>
+            dispatch(actions.authenticate(email, password, isSignUp))
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Auth));
