@@ -1,5 +1,4 @@
 import * as actionTypes from "./actionTypes";
-import axios from "../../axios";
 
 export const loadCalendarEventsStart = () => {
     return {
@@ -44,14 +43,6 @@ export const deleteCalendarEventFail = error => {
 export const loadCalendarEvents = () => {
     return dispatch => {
         dispatch(loadCalendarEventsStart());
-        axios
-            .get(`/events.json`)
-            .then(response => {
-                dispatch(loadCalendarEventsSuccess(response.data));
-            })
-            .catch(err => {
-                dispatch(loadCalendarEventsFail(err));
-            });
     };
 };
 
