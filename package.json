@@ -1,6 +1,6 @@
 {
   "dependencies": {
     "moment": "^2.20.1",
-    "react-big-calendar": "^0.17.0"
+    "react-big-calendar": "^0.20.3"
   }
 }
